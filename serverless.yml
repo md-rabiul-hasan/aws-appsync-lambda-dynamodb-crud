@@ -31,7 +31,7 @@ functions:
           - dynamodb:DeleteItem
           - dynamodb:PutItem
         Resource:
-          - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/watches
+          - { "Fn::GetAtt": ["watches", "Arn" ] }
 
 custom:
   accountId: ${AWS::AccountId}
