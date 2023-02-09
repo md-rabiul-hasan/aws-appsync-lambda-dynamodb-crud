@@ -33,7 +33,7 @@ const deleteWatch = async (watch_id) => {
     const params = {
         TableName: "watches",
         Key: {
-            watch_id: watch_id
+            "watch_id": watch_id
         }
     }
     try {
