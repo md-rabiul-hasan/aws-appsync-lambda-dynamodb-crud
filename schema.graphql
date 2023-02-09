@@ -1,0 +1,33 @@
+type Watch {
+    watch_id: Int
+    name: String
+    brand: String
+    category: String
+    price: Int
+    description: String
+}
+
+type Response {
+    response: Boolean
+}
+
+type Mutation {
+    addWatch(
+        name: String,
+        brand: String,
+        price: Int,
+        category: String,
+        description: String
+    ): Watch
+    deleteWatch(watch_id: ID!): Response
+}
+
+type Query {
+    getWatches: [Watch]
+    getWatch(watch_id: Int!): Watch
+}
+
+schema {
+    query: Query
+    mutation: Mutation
+}

@@ -1,0 +1,805 @@
+{
+  "service": {
+    "service": "aws-graphql-crud-appsync",
+    "serviceObject": {
+      "name": "aws-graphql-crud-appsync"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs16.x",
+      "region": "us-east-1",
+      "stage": "dev",
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            }
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "WatchCrudFunctionLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/watch_crud_function"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "aws-graphql-crud-appsync",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/watch_crud_function:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/watch_crud_function:*:*"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "aws-graphql-crud-appsync",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "WatchCrudFunctionLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": {
+                  "Ref": "ServerlessDeploymentBucket"
+                },
+                "S3Key": "serverless/aws-graphql-crud-appsync/dev/1675930821494-2023-02-09T08:20:21.494Z/watchCrudFunction.zip"
+              },
+              "Handler": "watch_function.handler",
+              "Runtime": "nodejs16.x",
+              "FunctionName": "watch_crud_function",
+              "MemorySize": 1024,
+              "Timeout": 6,
+              "Role": {
+                "Fn::GetAtt": [
+                  "WatchCrudFunctionIamRoleLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "WatchCrudFunctionIamRoleLambdaExecution",
+              "WatchCrudFunctionLogGroup"
+            ]
+          },
+          "WatchCrudFunctionLambdaVersionqWNSRPmS9zIWT5CQsWCKeHrcTj6Dn6Leo3wPiqOA": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "WatchCrudFunctionLambdaFunction"
+              },
+              "CodeSha256": "N6peWZiDW8rR6d+fob4x5b19ZqBob3kGD8o4FpXG1Z8="
+            }
+          },
+          "WatchCrudFunctionIamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "aws-graphql-crud-appsync",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/watch_crud_function:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "dynamodb:GetItem",
+                          "dynamodb:Scan",
+                          "dynamodb:Query",
+                          "dynamodb:UpdateItem",
+                          "dynamodb:DeleteItem",
+                          "dynamodb:PutItem"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:aws:dynamodb:us-east-1:${AWS::AccountId}:table/watches"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "aws-graphql-crud-appsync",
+                    "dev",
+                    "watchCrudFunction",
+                    {
+                      "Ref": "AWS::Region"
+                    }
+                  ]
+                ]
+              },
+              "ManagedPolicyArns": []
+            }
+          },
+          "watchTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "watches",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "watch_id",
+                  "AttributeType": "N"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "watch_id",
+                  "KeyType": "HASH"
+                }
+              ],
+              "ProvisionedThroughput": {
+                "ReadCapacityUnits": 3,
+                "WriteCapacityUnits": 3
+              }
+            }
+          },
+          "GraphQlApi": {
+            "Type": "AWS::AppSync::GraphQLApi",
+            "Properties": {
+              "Name": "aws_graphql_crud_appsync_api",
+              "AuthenticationType": "API_KEY",
+              "AdditionalAuthenticationProviders": [],
+              "XrayEnabled": false
+            }
+          },
+          "GraphQlApiKeySomeApiKey": {
+            "Type": "AWS::AppSync::ApiKey",
+            "Properties": {
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              },
+              "Description": "My Api Key",
+              "Expires": 1678521600
+            }
+          },
+          "GraphQlSchema": {
+            "Type": "AWS::AppSync::GraphQLSchema",
+            "Properties": {
+              "Definition": "type Watch {\n  watch_id: Int\n  name: String\n  brand: String\n  category: String\n  price: Int\n  description: String\n}\n\ntype Response {\n  response: Boolean\n}\n\ntype Mutation {\n  addWatch(name: String, brand: String, price: Int, category: String, description: String): Watch\n  deleteWatch(watch_id: ID!): Response\n}\n\ntype Query {\n  getWatches: [Watch]\n  getWatch(watch_id: Int!): Watch\n}\n\nschema {\n  query: Query\n  mutation: Mutation\n}",
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              }
+            }
+          },
+          "GraphQlDsawsLambdaWatchFunRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "appsync.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": "GraphQlDsawsLambdaWatchFunPolicy",
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Action": [
+                          "lambda:invokeFunction"
+                        ],
+                        "Effect": "Allow",
+                        "Resource": [
+                          {
+                            "Fn::GetAtt": [
+                              "WatchCrudFunctionLambdaFunction",
+                              "Arn"
+                            ]
+                          },
+                          {
+                            "Fn::Join": [
+                              ":",
+                              [
+                                {
+                                  "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"GraphQlDsawsLambdaWatchFunRole\"][\"Properties\"][\"Policies\"][0][\"PolicyDocument\"][\"Statement\"][0][\"Resource\"][0]"
+                                },
+                                "*"
+                              ]
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "GraphQlDsawsLambdaWatchFun": {
+            "Type": "AWS::AppSync::DataSource",
+            "Properties": {
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              },
+              "Name": "awsLambdaWatch_Fun",
+              "Description": "Lambda DataSources",
+              "Type": "AWS_LAMBDA",
+              "ServiceRoleArn": {
+                "Fn::GetAtt": [
+                  "GraphQlDsawsLambdaWatchFunRole",
+                  "Arn"
+                ]
+              },
+              "LambdaConfig": {
+                "LambdaFunctionArn": {
+                  "Fn::GetAtt": [
+                    "WatchCrudFunctionLambdaFunction",
+                    "Arn"
+                  ]
+                }
+              }
+            }
+          },
+          "GraphQlResolverQuerygetWatches": {
+            "Type": "AWS::AppSync::Resolver",
+            "DependsOn": "GraphQlSchema",
+            "Properties": {
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              },
+              "TypeName": "Query",
+              "FieldName": "getWatches",
+              "RequestMappingTemplate": "{\r\n    \"version\": \"2017-02-28\",\r\n    \"operation\": \"Invoke\",\r\n    \"payload\": {\r\n        \"field\": \"getWatches\",\r\n    }\r\n}",
+              "ResponseMappingTemplate": "$util.toJson($context.result)",
+              "Kind": "UNIT",
+              "DataSourceName": {
+                "Fn::GetAtt": [
+                  "GraphQlDsawsLambdaWatchFun",
+                  "Name"
+                ]
+              }
+            }
+          },
+          "GraphQlResolverQuerygetWatch": {
+            "Type": "AWS::AppSync::Resolver",
+            "DependsOn": "GraphQlSchema",
+            "Properties": {
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              },
+              "TypeName": "Query",
+              "FieldName": "getWatch",
+              "RequestMappingTemplate": "{\r\n    \"version\": \"2017-02-28\",\r\n    \"operation\": \"Invoke\",\r\n    \"payload\": {\r\n        \"field\": \"getWatch\",\r\n        \"arguments\": $utils.toJson($context.arguments)\r\n    }\r\n}",
+              "ResponseMappingTemplate": "$util.toJson($context.result)",
+              "Kind": "UNIT",
+              "DataSourceName": {
+                "Fn::GetAtt": [
+                  "GraphQlDsawsLambdaWatchFun",
+                  "Name"
+                ]
+              }
+            }
+          },
+          "GraphQlResolverMutationaddWatch": {
+            "Type": "AWS::AppSync::Resolver",
+            "DependsOn": "GraphQlSchema",
+            "Properties": {
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              },
+              "TypeName": "Mutation",
+              "FieldName": "addWatch",
+              "RequestMappingTemplate": "{\r\n    \"version\": \"2017-02-28\",\r\n    \"operation\": \"Invoke\",\r\n    \"payload\": {\r\n        \"field\": \"addWatch\",\r\n        \"arguments\": $utils.toJson($context.arguments)\r\n    }\r\n}",
+              "ResponseMappingTemplate": "$util.toJson($context.result)",
+              "Kind": "UNIT",
+              "DataSourceName": {
+                "Fn::GetAtt": [
+                  "GraphQlDsawsLambdaWatchFun",
+                  "Name"
+                ]
+              }
+            }
+          },
+          "GraphQlResolverMutationdeleteWatch": {
+            "Type": "AWS::AppSync::Resolver",
+            "DependsOn": "GraphQlSchema",
+            "Properties": {
+              "ApiId": {
+                "Fn::GetAtt": [
+                  "GraphQlApi",
+                  "ApiId"
+                ]
+              },
+              "TypeName": "Mutation",
+              "FieldName": "deleteWatch",
+              "RequestMappingTemplate": "{\r\n    \"version\": \"2017-02-28\",\r\n    \"operation\": \"Invoke\",\r\n    \"payload\": {\r\n        \"field\": \"deleteWatch\",\r\n        \"arguments\": $utils.toJson($context.arguments)\r\n    }\r\n}",
+              "ResponseMappingTemplate": "$util.toJson($context.result)",
+              "Kind": "UNIT",
+              "DataSourceName": {
+                "Fn::GetAtt": [
+                  "GraphQlDsawsLambdaWatchFun",
+                  "Name"
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            },
+            "Export": {
+              "Name": "sls-aws-graphql-crud-appsync-dev-ServerlessDeploymentBucketName"
+            }
+          },
+          "WatchCrudFunctionLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "WatchCrudFunctionLambdaVersionqWNSRPmS9zIWT5CQsWCKeHrcTj6Dn6Leo3wPiqOA"
+            },
+            "Export": {
+              "Name": "sls-aws-graphql-crud-appsync-dev-WatchCrudFunctionLambdaFunctionQualifiedArn"
+            }
+          },
+          "GraphQlApiKeySomeApiKey": {
+            "Value": {
+              "Fn::GetAtt": [
+                "GraphQlApiKeySomeApiKey",
+                "ApiKey"
+              ]
+            }
+          },
+          "GraphQlApiId": {
+            "Value": {
+              "Fn::GetAtt": [
+                "GraphQlApi",
+                "ApiId"
+              ]
+            },
+            "Export": {
+              "Name": {
+                "Fn::Sub": "${AWS::StackName}-GraphQlApiId"
+              }
+            }
+          },
+          "GraphQlApiUrl": {
+            "Value": {
+              "Fn::GetAtt": [
+                "GraphQlApi",
+                "GraphQLUrl"
+              ]
+            },
+            "Export": {
+              "Name": {
+                "Fn::Sub": "${AWS::StackName}-GraphQlApiUrl"
+              }
+            }
+          }
+        }
+      },
+      "coreCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "ServerlessDeploymentBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "ServerlessDeploymentBucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "ServerlessDeploymentBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:*",
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Resource": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            },
+                            "/*"
+                          ]
+                        ]
+                      },
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":s3:::",
+                            {
+                              "Ref": "ServerlessDeploymentBucket"
+                            }
+                          ]
+                        ]
+                      }
+                    ],
+                    "Condition": {
+                      "Bool": {
+                        "aws:SecureTransport": false
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": {
+              "Ref": "ServerlessDeploymentBucket"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "custom": {
+      "accountId": "${AWS::AccountId}",
+      "appSync": {
+        "name": "aws_graphql_crud_appsync_api",
+        "authenticationType": "API_KEY",
+        "apiKeys": [
+          {
+            "name": "SomeApiKey",
+            "description": "My Api Key",
+            "expiresAfter": "30d"
+          }
+        ],
+        "mappingTemplates": [
+          {
+            "dataSource": "awsLambdaWatch_Fun",
+            "type": "Query",
+            "field": "getWatches",
+            "request": "getWatches-request.vtl",
+            "response": "common-response.vtl"
+          },
+          {
+            "dataSource": "awsLambdaWatch_Fun",
+            "type": "Query",
+            "field": "getWatch",
+            "request": "getWatch-request.vtl",
+            "response": "common-response.vtl"
+          },
+          {
+            "dataSource": "awsLambdaWatch_Fun",
+            "type": "Mutation",
+            "field": "addWatch",
+            "request": "addWatch-request.vtl",
+            "response": "common-response.vtl"
+          },
+          {
+            "dataSource": "awsLambdaWatch_Fun",
+            "type": "Mutation",
+            "field": "deleteWatch",
+            "request": "deleteWatch-request.vtl",
+            "response": "common-response.vtl"
+          }
+        ],
+        "dataSources": [
+          {
+            "type": "AWS_LAMBDA",
+            "name": "awsLambdaWatch_Fun",
+            "description": "Lambda DataSources",
+            "config": {
+              "functionName": "watchCrudFunction"
+            }
+          }
+        ]
+      }
+    },
+    "plugins": [
+      "serverless-appsync-plugin",
+      "serverless-iam-roles-per-function"
+    ],
+    "pluginsData": {},
+    "functions": {
+      "watchCrudFunction": {
+        "name": "watch_crud_function",
+        "handler": "watch_function.handler",
+        "iamRoleStatements": [
+          {
+            "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"WatchCrudFunctionIamRoleLambdaExecution\"][\"Properties\"][\"Policies\"][0][\"PolicyDocument\"][\"Statement\"][1]"
+          }
+        ],
+        "events": [],
+        "package": {
+          "artifact": "D:\\Learning\\serverless\\graphql-crud\\.serverless\\watchCrudFunction.zip"
+        },
+        "memory": 1024,
+        "timeout": 6,
+        "runtime": "nodejs16.x",
+        "vpc": {},
+        "versionLogicalId": "WatchCrudFunctionLambdaVersionqWNSRPmS9zIWT5CQsWCKeHrcTj6Dn6Leo3wPiqOA"
+      }
+    },
+    "resources": {
+      "Resources": {
+        "watchTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "watches",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "watch_id",
+                "AttributeType": "N"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "watch_id",
+                "KeyType": "HASH"
+              }
+            ],
+            "ProvisionedThroughput": {
+              "ReadCapacityUnits": 3,
+              "WriteCapacityUnits": 3
+            }
+          }
+        }
+      },
+      "Outputs": {}
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless.yml",
+    "initialServerlessConfig": {
+      "service": "aws-graphql-crud-appsync",
+      "plugins": {
+        "$ref": "$[\"service\"][\"plugins\"]"
+      },
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "package": {
+        "individually": true,
+        "patterns": [
+          "!node_modules/**",
+          "!mapping-templates/**",
+          "!schema.graphql",
+          "!package.json"
+        ],
+        "artifactsS3KeyDirname": "serverless/aws-graphql-crud-appsync/dev/code-artifacts",
+        "artifactDirectoryName": "serverless/aws-graphql-crud-appsync/dev/1675930821494-2023-02-09T08:20:21.494Z"
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      }
+    },
+    "layers": {},
+    "isDashboardMonitoringPreconfigured": false
+  },
+  "package": {
+    "individually": true,
+    "artifactDirectoryName": "serverless/aws-graphql-crud-appsync/dev/1675930821494-2023-02-09T08:20:21.494Z",
+    "artifact": ""
+  }
+}

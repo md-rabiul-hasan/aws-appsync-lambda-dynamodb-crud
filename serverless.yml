@@ -1,0 +1,91 @@
+service: aws-graphql-crud-appsync
+
+plugins:
+  - serverless-appsync-plugin
+  - serverless-iam-roles-per-function
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  region: us-east-1
+
+package:
+  individually: true
+  patterns:
+    - '!node_modules/**'
+    - '!mapping-templates/**'
+    - '!schema.graphql'
+    - '!package.json'
+
+functions:
+  watchCrudFunction:
+    name: watch_crud_function
+    handler: watch_function.handler
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:Scan
+          - dynamodb:Query
+          - dynamodb:UpdateItem
+          - dynamodb:DeleteItem
+          - dynamodb:PutItem
+        Resource:
+          - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/watches
+
+custom:
+  accountId: ${AWS::AccountId}
+  appSync:
+    name: aws_graphql_crud_appsync_api
+    authenticationType: API_KEY
+    apiKeys:
+      - name: SomeApiKey
+        description: 'My Api Key'
+        expiresAfter: 30d
+    mappingTemplates:
+      - dataSource: awsLambdaWatch_Fun
+        type: Query
+        field: getWatches
+        request: "getWatches-request.vtl"
+        response: "common-response.vtl"
+
+      - dataSource: awsLambdaWatch_Fun
+        type: Query
+        field: getWatch
+        request: "getWatch-request.vtl"
+        response: "common-response.vtl"
+
+      - dataSource: awsLambdaWatch_Fun
+        type: Mutation
+        field: addWatch
+        request: "addWatch-request.vtl"
+        response: "common-response.vtl"
+      
+      - dataSource: awsLambdaWatch_Fun
+        type: Mutation
+        field: deleteWatch
+        request: "deleteWatch-request.vtl"
+        response: "common-response.vtl"
+
+    dataSources:
+      - type: AWS_LAMBDA
+        name: awsLambdaWatch_Fun
+        description: 'Lambda DataSources'
+        config:
+          functionName: watchCrudFunction
+
+resources:
+  Resources:
+    watchTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        TableName: watches  
+        AttributeDefinitions:
+          - AttributeName: "watch_id"
+            AttributeType: "N"
+        KeySchema:
+          - AttributeName: "watch_id"
+            KeyType: "HASH"
+        ProvisionedThroughput:
+          ReadCapacityUnits: 3
+          WriteCapacityUnits: 3
