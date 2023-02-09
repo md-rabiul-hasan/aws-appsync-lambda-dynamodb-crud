@@ -9,6 +9,7 @@ type Watch {
 
 type Response {
     response: Boolean
+    result: Boolean
 }
 
 type Mutation {
